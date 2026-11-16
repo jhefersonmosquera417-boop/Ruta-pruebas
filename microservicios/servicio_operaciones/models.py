@@ -1,4 +1,19 @@
-from spyne import ComplexModel, Integer, Unicode
+# Los modelos eran de Spyne (SOAP). Spyne ya no se usa en la versión REST y no es
+# compatible con las versiones recientes de Python, así que se reemplaza por esta
+# clase mínima: mismas clases, mismos campos, mismo constructor por nombre.
+class _Tipo:
+    def __init__(self, doc=""):
+        self.doc = doc
+
+Integer = Unicode = Float = Boolean = _Tipo
+
+
+class ComplexModel:
+    def __init__(self, **kwargs):
+        for cls in reversed(type(self).__mro__):
+            for nombre, valor in vars(cls).items():
+                if isinstance(valor, _Tipo):
+                    setattr(self, nombre, kwargs.get(nombre))
 
 NAMESPACE = 'popayan.transporte.operaciones'
 

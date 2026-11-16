@@ -49,10 +49,10 @@ def search_by_zone(zone_keyword: str) -> list[Route]:
                             r.fare, r.schedule, r.status
             FROM rutas r
             LEFT JOIN paradas s ON r.id = s.route_id
-            WHERE r.origin LIKE %s
-               OR r.destination LIKE %s
-               OR s.name LIKE %s
-               OR s.landmark_reference LIKE %s
+            WHERE unaccent(r.origin) ILIKE unaccent(%s)
+               OR unaccent(r.destination) ILIKE unaccent(%s)
+               OR unaccent(s.name) ILIKE unaccent(%s)
+               OR unaccent(s.landmark_reference) ILIKE unaccent(%s)
             ORDER BY r.id ASC
         """
         cursor.execute(sql, (patron, patron, patron, patron))
@@ -125,8 +125,8 @@ def find_direct_trip(orig: str, dest: str) -> dict | None:
             FROM rutas r
             INNER JOIN paradas s1 ON r.id = s1.route_id
             INNER JOIN paradas s2 ON r.id = s2.route_id
-            WHERE (s1.name LIKE %s OR s1.landmark_reference LIKE %s)
-              AND (s2.name LIKE %s OR s2.landmark_reference LIKE %s)
+            WHERE (unaccent(s1.name) ILIKE unaccent(%s) OR unaccent(s1.landmark_reference) ILIKE unaccent(%s))
+              AND (unaccent(s2.name) ILIKE unaccent(%s) OR unaccent(s2.landmark_reference) ILIKE unaccent(%s))
               AND s1.stop_order < s2.stop_order
               AND (r.status = 'ACTIVA' OR r.status IS NULL)
             ORDER BY stops_between ASC, r.fare ASC
@@ -150,8 +150,8 @@ def find_direct_trip(orig: str, dest: str) -> dict | None:
                 6 AS destination_order,
                 5 AS stops_between
             FROM rutas r
-            WHERE r.origin LIKE %s
-              AND r.destination LIKE %s
+            WHERE unaccent(r.origin) ILIKE unaccent(%s)
+              AND unaccent(r.destination) ILIKE unaccent(%s)
               AND (r.status = 'ACTIVA' OR r.status IS NULL)
             LIMIT 1
         """
@@ -178,8 +178,8 @@ def find_transfer_trip(orig: str, dest: str) -> dict | None:
             INNER JOIN rutas r2 ON r1.id <> r2.id
             INNER JOIN paradas s_trans2 ON r2.id = s_trans2.route_id
             INNER JOIN paradas s_dest ON r2.id = s_dest.route_id
-            WHERE (s_orig.name LIKE %s OR s_orig.landmark_reference LIKE %s)
-              AND (s_dest.name LIKE %s OR s_dest.landmark_reference LIKE %s)
+            WHERE (unaccent(s_orig.name) ILIKE unaccent(%s) OR unaccent(s_orig.landmark_reference) ILIKE unaccent(%s))
+              AND (unaccent(s_dest.name) ILIKE unaccent(%s) OR unaccent(s_dest.landmark_reference) ILIKE unaccent(%s))
               AND s_trans1.stop_order > s_orig.stop_order
               AND s_dest.stop_order > s_trans2.stop_order
               AND (s_trans1.name = s_trans2.name OR s_trans1.landmark_reference = s_trans2.landmark_reference)

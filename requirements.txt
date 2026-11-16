@@ -4,7 +4,7 @@
 #
 # REQUISITOS PREVIOS:
 #   - Python 3.8 o superior instalado en el sistema.
-#   - Servidor MySQL activo en el puerto 3306 (XAMPP, WAMP o MySQL Workbench).
+#   - Servidor PostgreSQL activo en el puerto 3306 (XAMPP, WAMP o PostgreSQL Workbench).
 #
 # ------------------------------------------------------------------------------
 # PASO 1: CREAR EL ENTORNO VIRTUAL
@@ -39,7 +39,7 @@
 # ------------------------------------------------------------------------------
 # PASO 4: IMPORTAR LA BASE DE DATOS
 # ------------------------------------------------------------------------------
-# Abre tu gestor MySQL (phpMyAdmin, Workbench o consola) y ejecuta el archivo:
+# Abre tu gestor PostgreSQL (phpMyAdmin, Workbench o consola) y ejecuta el archivo:
 #
 #   base_de_datos/esquema_bd.sql
 #
@@ -74,7 +74,7 @@
 # LISTA DE DEPENDENCIAS DE PYTHON:
 # ==============================================================================
 spyne==2.14.0
-PyMySQL==1.1.2
+psycopg2-binary>=2.9.9
 cryptography>=42.0.0
 lxml==6.0.2
 requests==2.32.5

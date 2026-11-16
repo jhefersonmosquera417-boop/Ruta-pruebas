@@ -1,30 +1,35 @@
+import os
 from contextlib import contextmanager
-import pymysql
-import pymysql.cursors
+
+import psycopg2
+import psycopg2.extras
+
 from config import Config
 
+
 def _get_connection():
-    return pymysql.connect(
+    return psycopg2.connect(
         host=Config.DB_HOST,
         user=Config.DB_USER,
         password=Config.DB_PASSWORD,
-        db=Config.DB_NAME,
+        dbname=Config.DB_NAME,
         port=Config.DB_PORT,
-        cursorclass=pymysql.cursors.DictCursor,
-        charset="utf8mb4",
-        autocommit=False
+        sslmode=os.getenv("DB_SSLMODE", "require"),  # Supabase exige SSL
+        connect_timeout=10,
     )
+
 
 @contextmanager
 def get_cursor(commit: bool = False):
     """
     Context manager: abre conexión y cursor, y garantiza el cierre
-    aunque ocurra una excepción (evita fugas de conexiones a MySQL).
+    aunque ocurra una excepción (evita fugas de conexiones).
     'commit=True' se usa en operaciones de escritura (INSERT/UPDATE/DELETE).
+    Las filas se devuelven como diccionarios (igual que DictCursor en MySQL).
     """
     conn = _get_connection()
     try:
-        with conn.cursor() as cursor:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
             yield cursor
             if commit:
                 conn.commit()

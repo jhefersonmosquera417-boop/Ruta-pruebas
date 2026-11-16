@@ -85,7 +85,7 @@ def get_intersecting_routes_by_landmark(landmark: str, exclude_route_id: int = N
             SELECT DISTINCT r.id, r.code, r.company, r.origin, r.destination, s.name AS stop_name
             FROM rutas r
             JOIN paradas s ON r.id = s.route_id
-            WHERE (s.name LIKE %s OR s.landmark_reference LIKE %s)
+            WHERE (unaccent(s.name) ILIKE unaccent(%s) OR unaccent(s.landmark_reference) ILIKE unaccent(%s))
         """
         params = [f"%{landmark}%", f"%{landmark}%"]
         if exclude_route_id:
@@ -120,11 +120,12 @@ def save_service_rating(route_id: int, company: str, user_id: int, punctuality_s
             (route_id, company, user_id, punctuality_score, comfort_score, driver_score, 
              safety_score, final_score, category, comment)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            RETURNING id
             """,
             (route_id, company, user_id, punctuality_score, comfort_score, driver_score,
              safety_score, final_score, category, comment)
         )
-        return cursor.lastrowid
+        return cursor.fetchone()["id"]
 
 # ------------------------------------------------------------------------------
 # PERSISTENCIA DE TELEMETRÍA Y SOBRECUPO
@@ -141,11 +142,12 @@ def save_bus_telemetry(route_id: int, bus_plate: str, current_passengers: int, m
             (route_id, bus_plate, current_passengers, max_capacity, occupancy_ratio, 
              current_speed, risk_level, reinforcement_needed)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            RETURNING id
             """,
             (route_id, bus_plate, current_passengers, max_capacity, occupancy_ratio,
-             current_speed, risk_level, 1 if reinforcement_needed else 0)
+             current_speed, risk_level, bool(reinforcement_needed))
         )
-        return cursor.lastrowid
+        return cursor.fetchone()["id"]
 
 # ------------------------------------------------------------------------------
 # PERSISTENCIA DE ALERTAS DE SEGURIDAD
@@ -162,11 +164,12 @@ def save_emergency_alert(route_id: int, bus_plate: str, alert_type: str, severit
             (route_id, bus_plate, alert_type, severity_level, criticality_score, 
              max_response_time_minutes, location_landmark, description)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            RETURNING id
             """,
             (route_id, bus_plate, alert_type, severity_level, criticality_score,
              max_response_time_minutes, location_landmark, description)
         )
-        return cursor.lastrowid
+        return cursor.fetchone()["id"]
 
 # ------------------------------------------------------------------------------
 # AGREGACIONES PARA RANKING DE EMPRESAS DE POPAYÁN
