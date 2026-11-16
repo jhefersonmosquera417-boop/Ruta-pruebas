@@ -1,0 +1,13 @@
+{
+  "buildCommand": "cd frontend && npm install && npm run build",
+  "outputDirectory": "frontend/dist",
+  "functions": {
+    "api/*.py": { "includeFiles": "microservicios/**" }
+  },
+  "rewrites": [
+    { "source": "/api/rutas/:path*",       "destination": "/api/ms_rutas" },
+    { "source": "/api/operaciones/:path*", "destination": "/api/ms_operaciones" },
+    { "source": "/api/monitoreo/:path*",   "destination": "/api/ms_monitoreo" },
+    { "source": "/((?!api/).*)",           "destination": "/index.html" }
+  ]
+}
